@@ -11,5 +11,8 @@ import '../styles/index.css'
 import MiTodoList from './components/Home';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <MiTodoList/>
+    <>
+        <MiTodoList/>
+    </>
+    
 )

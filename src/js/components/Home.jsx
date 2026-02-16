@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function MiTodoList() {
   const [tareas, setTareas] = useState([]);
@@ -8,6 +8,40 @@ function MiTodoList() {
   const [errores, setErrores] = useState('');
   const [editandoId, setEditandoID] = useState(null)
   const [textoEditado, setTextoEditado] = useState('')
+  const USERNAME = "Jose_Smile"
+  const USER_OPERATIONS = "https://playground.4geeks.com/todo/users/"
+  const TODO_OPERATIONS = "https://playground.4geeks.com/todo/todos/"
+
+
+const createUser= async () => {
+    try {
+        const response = await fetch(`${USER_OPERATIONS}${USERNAME}`, {method: "POST"})
+        const data = await response.json()
+        return data
+    }
+    catch (error) {
+        console.log("hubo un error al crear usuario:",error)
+    }
+}
+
+const getAllData = async () => {
+  try{
+    const res = await fetch (`${USER_OPERATIONS}${USERNAME}`)
+    if(res.status === 404){
+      await createUser()
+      return await getAllData()
+    }
+    return res.json()
+  }
+  catch (error) {
+    console.log("Hubo un error al obtener usuarios", error)
+  }
+}
+
+
+useEffect(()=> {
+  getAllData()
+},[tareas])
 
   function agregarTarea() {
     //Validación integrada en la función agregarTarea()
@@ -20,6 +54,17 @@ function MiTodoList() {
 
     setTareas([...tareas, { texto: inputValue, completada: false, isEditing: false }])
     setInputValue("")
+
+    fetch(`${TODO_OPERATIONS}${USERNAME}`, {
+      method: "POTS",
+      headers: {"Content-Type": "aplication/json"},
+      body: JSON.stringify({
+        label: inputValue,
+        is_done: false
+      })
+    })
+    
+
   }
 
   const eliminarTarea = (indiceObjetivo) => {
@@ -46,6 +91,7 @@ function MiTodoList() {
   const guardarEdicion = (index) => {
     if (textoEditado.trim() === '') {
       setErrores('La nueva tarea no puede estar vacia')
+      return false
     }
     const nuevasTareas = tareas.map((tarea, i) =>
       i === index ? { ...tarea, texto: textoEditado } : tarea
@@ -63,6 +109,7 @@ function MiTodoList() {
     setTextoEditado('')
   }
 
+  
   return (
     <div className="container">
       <h1>Mi TodoList</h1>
