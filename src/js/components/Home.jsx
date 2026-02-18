@@ -11,7 +11,7 @@ function MiTodoList() {
   const USERNAME = "Jose_Smile"
   const USER_OPERATIONS = "https://playground.4geeks.com/todo/users/"
   const TODO_OPERATIONS = "https://playground.4geeks.com/todo/todos/"
-
+  
 
 const createUser= async () => {
     try {
@@ -31,7 +31,11 @@ const getAllData = async () => {
       await createUser()
       return await getAllData()
     }
-    return res.json()
+    const data = res.json()
+    console.log(data)
+     /*data.todos.forEach(item => {
+       console.log(item.label)
+      });*/
   }
   catch (error) {
     console.log("Hubo un error al obtener usuarios", error)
@@ -43,7 +47,7 @@ useEffect(()=> {
   getAllData()
 },[tareas])
 
-  function agregarTarea() {
+  const agregarTarea = () => {
     //Validación integrada en la función agregarTarea()
     if (inputValue.trim() === "") {
       setErrores("no se puede añadir una tarea vacia")
@@ -53,22 +57,22 @@ useEffect(()=> {
     setErrores("")
 
     setTareas([...tareas, { texto: inputValue, completada: false, isEditing: false }])
-    setInputValue("")
-
+    
     fetch(`${TODO_OPERATIONS}${USERNAME}`, {
-      method: "POTS",
-      headers: {"Content-Type": "aplication/json"},
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
         label: inputValue,
         is_done: false
       })
     })
-    
+    setInputValue("")
 
   }
 
   const eliminarTarea = (indiceObjetivo) => {
     const nuevaLista = tareas.filter((_, indexActual) => indexActual !== indiceObjetivo);
+
     setTareas(nuevaLista);
   }
   const completarTarea = (indiceObjetivo) => {
