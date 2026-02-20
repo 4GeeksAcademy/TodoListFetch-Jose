@@ -31,11 +31,14 @@ const getAllData = async () => {
       await createUser()
       return await getAllData()
     }
-    const data = res.json()
-    console.log(data)
-     /*data.todos.forEach(item => {
-       console.log(item.label)
-      });*/
+    const data = await res.json()
+      if (data.todos && Array.isArray(data.todos)) {
+        const tareasDelServidor = data.todos.map(todo => ({
+          texto: todo.label,
+          completada: todo.is_done,
+          isEditing: false
+        }))
+        setTareas(tareasDelServidor)}
   }
   catch (error) {
     console.log("Hubo un error al obtener usuarios", error)
@@ -45,34 +48,53 @@ const getAllData = async () => {
 
 useEffect(()=> {
   getAllData()
-},[tareas])
+},[])
 
-  const agregarTarea = () => {
+  const agregarTarea = async () => {
     //Validación integrada en la función agregarTarea()
     if (inputValue.trim() === "") {
       setErrores("no se puede añadir una tarea vacia")
       return false
     }
-
     setErrores("")
 
-    setTareas([...tareas, { texto: inputValue, completada: false, isEditing: false }])
-    
-    fetch(`${TODO_OPERATIONS}${USERNAME}`, {
+    try{
+     const response = await fetch(`${TODO_OPERATIONS}${USERNAME}`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
         label: inputValue,
-        is_done: false
+        is_done: false,
+        
       })
     })
+    const tareaCreada = await response.json()
+    console.log(tareaCreada);
+    const { id, is_done, label } = tareaCreada    
+    setTareas([...tareas, { tareaID: id, texto: label, completada: is_done, isEditing: false }])
+    console.log(tareas);
+    
+    }catch(err){
+      throw new Error(err)
+    }   
     setInputValue("")
 
   }
 
   const eliminarTarea = (indiceObjetivo) => {
     const nuevaLista = tareas.filter((_, indexActual) => indexActual !== indiceObjetivo);
-
+    fetch (`${TODO_OPERATIONS}${tareas.tareaID}`, {
+      method:"DELETE",
+      headers: {'Content-Type': 'application/json'}
+    })
+    .then (res => {
+      if (!res.ok) {
+        throw new Error(`Error al eliminar la tarea`)
+      }
+    })
+    .catch(err => {
+      throw new Error(err)
+    })
     setTareas(nuevaLista);
   }
   const completarTarea = (indiceObjetivo) => {
