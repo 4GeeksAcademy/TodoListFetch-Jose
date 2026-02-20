@@ -36,9 +36,10 @@ const getAllData = async () => {
         const tareasDelServidor = data.todos.map(todo => ({
           texto: todo.label,
           completada: todo.is_done,
-          isEditing: false
+          isEditing: false,
+          tareaID : todo.id
         }))
-        setTareas(tareasDelServidor)}
+        return tareasDelServidor}
   }
   catch (error) {
     console.log("Hubo un error al obtener usuarios", error)
@@ -48,7 +49,11 @@ const getAllData = async () => {
 
 useEffect(()=> {
   getAllData()
+  .then (data => setTareas(data))
 },[])
+useEffect (()=>{
+  console.log(tareas)
+},[tareas])
 
   const agregarTarea = async () => {
     //Validación integrada en la función agregarTarea()
@@ -72,7 +77,6 @@ useEffect(()=> {
     console.log(tareaCreada);
     const { id, is_done, label } = tareaCreada    
     setTareas([...tareas, { tareaID: id, texto: label, completada: is_done, isEditing: false }])
-    console.log(tareas);
     
     }catch(err){
       throw new Error(err)
@@ -81,9 +85,10 @@ useEffect(()=> {
 
   }
 
-  const eliminarTarea = (indiceObjetivo) => {
+
+  const eliminarTarea = async (indiceObjetivo) => {  
     const nuevaLista = tareas.filter((_, indexActual) => indexActual !== indiceObjetivo);
-    fetch (`${TODO_OPERATIONS}${tareas.tareaID}`, {
+    fetch (`${TODO_OPERATIONS}${tareas[indiceObjetivo].tareaID}`, {
       method:"DELETE",
       headers: {'Content-Type': 'application/json'}
     })
@@ -122,7 +127,7 @@ useEffect(()=> {
     const nuevasTareas = tareas.map((tarea, i) =>
       i === index ? { ...tarea, texto: textoEditado } : tarea
     );
-
+    
     setTareas(nuevasTareas)
     setEditandoID('null')
     setTextoEditado('')
